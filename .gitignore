@@ -1,0 +1,11 @@
+# for local dev
+dev.*
+.idea
+*.pyc
+.vscode
+.python-version
+
+# for pyhton build
+/dist
+/build
+v4xyz.egg-info
