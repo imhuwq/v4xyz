@@ -1,7 +1,6 @@
-import os
 from setuptools import setup
 
-version = "0.0.1"
+version = "0.0.3"
 description = "A command line tool to chat with GPT4 and render markdown response."
 with open("README.md") as fp:
     long_description = fp.read()
