@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = "0.0.3"
+version = "0.0.4"
 description = "A command line tool to chat with GPT4 and render markdown response."
 with open("README.md") as fp:
     long_description = fp.read()
@@ -36,6 +36,7 @@ setup(name="v4xyz",
           ],
       },
       install_requires=[
+          "art==5.9",
           "click==8.1.3",
           "openai==0.27.6",
           "rich==13.3.5"
