@@ -1,9 +1,11 @@
-import os
 import json
+import os
 from datetime import datetime
 
 import click
 import openai
+from art import text2art
+from rich import print
 from rich.live import Live
 from rich.markdown import Markdown
 
@@ -17,7 +19,14 @@ CONFIG_TEMPLATE = """
 }
 """.strip()
 OPENAI_SECRET = None
-HISTORY_PATH = os.path.join(HOME_DIR, ".v4", "chat_history.txt")
+HISTORY_PATH = os.path.join(HOME_DIR, ".v4xyz", "chat_history.txt")
+
+
+class Cmd(click.Command):
+    def format_help(self, ctx, formatter):
+        art = text2art("This is the Way", "Small Slant")
+        click.echo(art)
+        super().format_help(ctx, formatter)
 
 
 def edit_config():
@@ -53,6 +62,8 @@ def count_token(content: str):
 
 def load_history(max_token: int = 4096):
     histories = []
+    if not os.path.exists(HISTORY_PATH):
+        return [], 0, 0
 
     with open(HISTORY_PATH, "r") as fp:
         block_data = ""
@@ -94,6 +105,8 @@ def ask_gpt4(inputs: str):
     histories, histories_token, num_dropped = load_history()
 
     system_prompt = "You are a helpful assistant always replay in markdown format."
+    system_prompt += "You should answer as brief as possible."
+
     sys_prompt_token = count_token(system_prompt)
     input_token = count_token(inputs)
     total_token = histories_token + sys_prompt_token + input_token
@@ -102,8 +115,10 @@ def ask_gpt4(inputs: str):
     messages.extend(histories)
     messages.append({"role": "user", "content": inputs})
 
-    print(f">> Question : {inputs}")
-    print(f">> Meta     : [histories: {len(histories)}]\t[dropped: {num_dropped}]\t[tokens: {total_token}]\n")
+    print(f"[bold red   ]Question: {inputs}[/]")
+    print(f"[bold yellow]Context : {len(histories)} histories, {num_dropped} dropped, {total_token} tokens[/]")
+    print("-" * 10)
+    print("")
 
     rsp = openai.ChatCompletion.create(model="gpt-4", messages=messages, stream=True)
     answer = ""
@@ -121,12 +136,14 @@ def ask_gpt4(inputs: str):
     with open(HISTORY_PATH, "a") as fp:
         fp.write(f"Answer\t{datetime.now()}\n{answer}\n")
 
-    print(f">> Meta     : [tokens: {count_token(answer)}]\n")
+    print("")
+    print("-" * 10)
+    print(f"[bold yellow]Received: {count_token(answer)} tokens[/]")
 
 
-@click.command()
+@click.command(cls=Cmd)
 @click.option("-e", "--edit", is_flag=True, help="Edit the config file")
-@click.argument("inputs", nargs=1, required=False)
+@click.argument("inputs", nargs=1, required=True)
 def v4(edit, inputs):
     if edit is True:
         return edit_config()
