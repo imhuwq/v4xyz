@@ -41,7 +41,7 @@ def load_config():
     global OPENAI_SECRET
 
     if not os.path.exists(CONFIG_PATH):
-        click.echo("config file not found, try `v4 -e` first to generate a config file.")
+        click.echo("config file not found, try `v4 -e` first to set your config file.")
         exit(1)
 
     with open(CONFIG_PATH) as fp:
@@ -53,6 +53,10 @@ def load_config():
         os.environ["https_proxy"] = config["https_proxy"]
 
     OPENAI_SECRET = config["openai_secret"]
+    if not OPENAI_SECRET:
+        click.echo("openai_secret is not set in config file, try `v4 -e` to edit your config file")
+        exit(1)
+
     openai.api_key = OPENAI_SECRET
 
 
@@ -143,13 +147,16 @@ def ask_gpt4(inputs: str):
 
 @click.command(cls=Cmd)
 @click.option("-e", "--edit", is_flag=True, help="Edit the config file")
-@click.argument("inputs", nargs=1, required=True)
+@click.argument("inputs", nargs=1, required=False)  # required must be False, otherwise we cant get into edit mode
 def v4(edit, inputs):
     if edit is True:
         return edit_config()
-    else:
-        load_config()
 
+    if inputs is None:
+        click.echo(v4.get_help(click.Context(v4)))
+        exit(1)
+
+    load_config()
     inputs = inputs.strip()
     if not inputs:
         return

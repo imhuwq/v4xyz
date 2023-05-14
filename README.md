@@ -6,13 +6,14 @@
 
 <!-- prettier-ignore -->
 
-**A command line tool to chat with GPT4 and render markdown response.**
+## v4xyz, way for doing kinds of things.
 
----
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/v4xyz?style=social)
 ![PyPI](https://img.shields.io/pypi/v/v4xyz?style=social)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/v4xyz?style=social)
-![PyPI - License](https://img.shields.io/pypi/l/v4xyz?style=social)
+![GitHub](https://img.shields.io/github/license/imhuwq/v4xyz?style=social)
+
+**A cli tool that ask GPT4 for programming solutions and get answers directly in terminal.**
 
 ```
  ______   __    _              _             __    __            _      __             
@@ -21,6 +22,8 @@
 /_/    /_//_//_/  /___/     /_/  /___/     \__/ /_//_/\__/      |__/|__/  \_,_/  \_, / 
                                                                                 /___/  
 ```
+
+---
 
 </p>
 </div>
@@ -60,9 +63,9 @@ The config file is on json format:
 ```
 
 The `openai_secret` must be set to your OpenAI key.   
-The `http_proxy` and `https_proxy` are optional if the OpenAI API is accessible from your region.
+The `http_proxy` and `https_proxy` are optional if the OpenAI API is directly accessible from your region.
 
-## 3. Chat with GPT4 in Terminal
+## 3. Ask GPT4 in Terminal
 
 ```shell
 v4 'How to config a reverse proxy with Nginx?'

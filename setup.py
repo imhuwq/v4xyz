@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = "0.0.4"
+version = "0.0.6"
 description = "A command line tool to chat with GPT4 and render markdown response."
 with open("README.md") as fp:
     long_description = fp.read()
@@ -18,6 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "License :: OSI Approved :: Apache Software License",
 ]
 
 setup(name="v4xyz",
@@ -28,6 +29,7 @@ setup(name="v4xyz",
       url=url,
       author=author,
       author_email=author_email,
+      license="Apache License 2.0",
       packages=[],
       py_modules=["v4"],
       entry_points={
