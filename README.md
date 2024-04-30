@@ -54,20 +54,22 @@ Once you have `v4xyz` installed, you have to config the OpenAI API key and the p
 v4 -e # this will open the config file with your editor
 ```
 
-The config file is on json format:
+The config file is in json format:
 
 ```json
 {
   "openai_secret": "",
+  "openai_model": "gpt-4-turbo",
   "http_proxy": "",
   "https_proxy": ""
 }
 ```
 
 The `openai_secret` must be set to your OpenAI key.   
+The `openai_model` is optional, the default is `gpt-4-turbo`.
 The `http_proxy` and `https_proxy` are optional if the OpenAI API is directly accessible from your region.
 
-## 3. Ask GPT4 in Terminal
+## 3. Ask AI in Terminal
 
 ```shell
 v4 'How to config a reverse proxy with Nginx?'
