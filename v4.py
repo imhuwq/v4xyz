@@ -14,12 +14,30 @@ CONFIG_PATH = os.path.join(HOME_DIR, ".v4xyz", "config.json")
 CONFIG_TEMPLATE = """
 {
   "openai_secret": "",
+  "openai_model": "gpt-4-turbo",
   "http_proxy": "",
-  "https_proxy": ""
+  "https_proxy": "",
 }
 """.strip()
 OPENAI_SECRET = None
+OPENAI_MODEL = "gpt-4-turbo"
 HISTORY_PATH = os.path.join(HOME_DIR, ".v4xyz", "chat_history.txt")
+
+Prices = {
+    "gpt-4-turbo-2024-04-09": {
+        "input": 0.01 / 1000,
+        "output": 0.03 / 1000,
+
+    },
+    "gpt-4-turbo": {
+        "input": 0.01 / 1000,
+        "output": 0.03 / 1000,
+    },
+    "gpt-4": {
+        "input": 0.03 / 1000,
+        "output": 0.06 / 1000,
+    }
+}
 
 
 class Cmd(click.Command):
@@ -39,6 +57,7 @@ def edit_config():
 
 def load_config():
     global OPENAI_SECRET
+    global OPENAI_MODEL
 
     if not os.path.exists(CONFIG_PATH):
         click.echo("config file not found, try `v4 -e` first to set your config file.")
@@ -51,6 +70,8 @@ def load_config():
         os.environ["http_proxy"] = config["http_proxy"]
     if config["https_proxy"]:
         os.environ["https_proxy"] = config["https_proxy"]
+    if config["openai_model"]:
+        OPENAI_MODEL = config["openai_model"]
 
     OPENAI_SECRET = config["openai_secret"]
     if not OPENAI_SECRET:
@@ -64,7 +85,10 @@ def count_token(content: str):
     return len(content) // 4
 
 
-def load_history(max_token: int = 4096):
+def load_history(num_history:int, max_token: int = 4096):
+    if num_history == 0:
+        return [], 0, 0
+    
     histories = []
     if not os.path.exists(HISTORY_PATH):
         return [], 0, 0
@@ -89,6 +113,8 @@ def load_history(max_token: int = 4096):
         if block_data and block_role == "assistant":
             histories.append({"role": block_role, "content": block_data})
 
+    histories = histories[-num_history:]
+
     total_token = 0
     histories_reverse, histories = histories[::-1], []
     for history in histories_reverse:
@@ -105,8 +131,8 @@ def load_history(max_token: int = 4096):
     return histories, total_token, num_dropped
 
 
-def ask_gpt4(inputs: str):
-    histories, histories_token, num_dropped = load_history()
+def ask_openai(inputs: str, history: int):
+    histories, histories_token, num_dropped = load_history(history)
 
     system_prompt = "You are a helpful assistant always replay in markdown format."
     system_prompt += "You should answer as brief as possible."
@@ -119,12 +145,13 @@ def ask_gpt4(inputs: str):
     messages.extend(histories)
     messages.append({"role": "user", "content": inputs})
 
+    print(f"[bold blue  ]Model   : {OPENAI_MODEL}[/]")
     print(f"[bold red   ]Question: {inputs}[/]")
     print(f"[bold yellow]Context : {len(histories)} histories, {num_dropped} dropped, {total_token} tokens[/]")
     print("-" * 10)
     print("")
 
-    rsp = openai.ChatCompletion.create(model="gpt-4", messages=messages, stream=True)
+    rsp = openai.ChatCompletion.create(model=OPENAI_MODEL, messages=messages, stream=True)
     answer = ""
     md = Markdown(answer)
     with Live(md, refresh_per_second=10) as live:
@@ -144,13 +171,23 @@ def ask_gpt4(inputs: str):
     print("-" * 10)
     print(f"[bold yellow]Received: {count_token(answer)} tokens[/]")
 
+    price = Prices[OPENAI_MODEL]
+    input_cost = input_token * price["input"]
+    output_cost = count_token(answer) * price["output"]
+    print(f"[bold blue  ]Cost   : {input_cost + output_cost:.6f}$, input {input_cost:.6f}$, output {output_cost:.6f}$[/]")
+
 
 @click.command(cls=Cmd)
 @click.option("-e", "--edit", is_flag=True, help="Edit the config file")
+@click.option("-h", "--history", type=int, default=0, help="Ask with last n histories")
 @click.argument("inputs", nargs=1, required=False)  # required must be False, otherwise we cant get into edit mode
-def v4(edit, inputs):
+def v4(edit, history, inputs):
     if edit is True:
         return edit_config()
+    
+    if history < 0:
+        click.echo("history must be positive")
+        exit(2)
 
     if inputs is None:
         click.echo(v4.get_help(click.Context(v4)))
@@ -162,7 +199,7 @@ def v4(edit, inputs):
         return
 
     inputs = inputs.capitalize()
-    return ask_gpt4(inputs)
+    return ask_openai(inputs, history)
 
 
 def main():

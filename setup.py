@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = "0.0.6"
+version = "0.1.0"
 description = "A command line tool to chat with GPT4 and render markdown response."
 with open("README.md") as fp:
     long_description = fp.read()
@@ -22,7 +22,7 @@ classifiers = [
 ]
 
 setup(name="v4xyz",
-      version=version,  # the package version, it may be different from the release version
+      version=version,
       description=description,
       long_description=long_description,
       long_description_content_type="text/markdown",
